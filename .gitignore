@@ -1,0 +1,24 @@
+# Diretórios de Módulo e Build
+node_modules/
+frontend/node_modules/
+backend/vendor/
+backend/main # Binário Go gerado pelo build
+
+# Arquivos de Cache e Log
+.vscode/ # Configurações locais do VS Code
+npm-debug.log
+yarn-error.log
+
+# Diretórios de Build do React
+frontend/build/
+frontend/dist/
+
+# Diretórios de Dados do Docker
+# O volume de dados do Postgres não deve ir para o Git
+data/
+*.db
+*.sqlite
+
+# Arquivos de Sistema
+.DS_Store
+Thumbs.db
