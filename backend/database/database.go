@@ -14,13 +14,20 @@ import (
 var DB *gorm.DB
 
 func Conectar() {
-	// Pega variáveis de ambiente definidas no docker-compose.yml
+	// Pega variáveis de ambiente
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
 	port := os.Getenv("DB_PORT")
 
+	// Garante que o port não está vazio, para evitar o erro de parsing
+    if port == "" {
+        port = "5432" // Valor de fallback, caso esteja vazio (ajuste se necessário)
+        fmt.Printf("Atenção: Variável DB_PORT não definida. Usando porta padrão: %s\n", port)
+    }
+
+	// Monta a string de conexão (DSN)
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", 
 		host, user, password, dbname, port)
 
@@ -30,7 +37,7 @@ func Conectar() {
 
 	if err != nil {
 		// Log e encerra o programa se a conexão falhar
-		log.Fatalf("Falha ao conectar com o banco de dados: %v", err)
+		log.Fatalf("Falha ao conectar com o banco de dados: %v. Verifique suas variáveis de ambiente: %s", err, dsn)
 	}
 
 	fmt.Println("Conexão com o banco de dados estabelecida com sucesso!")

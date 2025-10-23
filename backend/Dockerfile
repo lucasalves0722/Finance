@@ -1,37 +1,34 @@
-# Estágio de construção (BUILDER)
-# Usamos a versão 1.23, que já corrigimos ser a correta
-FROM golang:1.23 AS builder 
+# ----------------------------------------------------------------------
+# Estágio 1: Build (Compilação da Aplicação Go)
+# ----------------------------------------------------------------------
+# Usamos o Go 1.23, conforme exigido pelos erros de dependência
+FROM golang:1.23-alpine AS builder
 
-# 1. Definir o diretório de trabalho conforme a convenção Go
-WORKDIR /go/src/app
+# Define o diretório de trabalho
+WORKDIR /app
 
-# 2. Copiar os arquivos de módulo (para cache)
-COPY go.mod .
-COPY go.sum .
-
-# 3. Baixar dependências
-RUN go mod download
-
-# 4. Copiar todo o código-fonte restante
+# Copia TODOS os arquivos de código-fonte (incluindo go.mod, handlers, database, models)
 COPY . .
 
-# 5. Construir o executável
-# Usamos o caminho completo do módulo e CGO_ENABLED=0 para um executável estático
-# que não terá problemas no estágio FROM scratch
-RUN CGO_ENABLED=0 go build -o main -ldflags='-w -s' .
+# Baixa as dependências. O go.mod e go.sum estão presentes no COPY . . acima.
+RUN go mod download
+
+# Compila a aplicação. Usamos -mod=readonly para evitar conflito com o diretório 'vendor' local.
+RUN CGO_ENABLED=0 GOOS=linux go build -a -mod=readonly -installsuffix cgo -o app ./main.go
 
 
-# Estágio Final (PRODUÇÃO)
-# Imagem scratch (a menor possível)
-FROM scratch 
+# ----------------------------------------------------------------------
+# Estágio 2: Final (Imagem de Produção Leve)
+# ----------------------------------------------------------------------
+FROM alpine:latest
 
-# Copiar os certificados de Root (necessário para a API Go acessar o DB)
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+# Define o fuso horário (Opcional, mas boa prática)
+ENV TZ=America/Sao_Paulo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Definir o diretório e copiar o binário
-WORKDIR /app
-COPY --from=builder /go/src/app/main . 
+# Copia o binário 'app' compilado e o executa
+WORKDIR /root/
+COPY --from=builder /app/app .
 
-# Expor a porta e definir o comando de execução
-EXPOSE 8080
-CMD ["./main"]
+# Comando de execução: Roda o binário compilado
+CMD ["./app"]

@@ -9,16 +9,16 @@ services:
     # Variáveis de ambiente para conexão com o DB
     environment:
       API_PORT: 8080
-      # Conexão com o serviço 'database'
       DB_HOST: database 
       DB_USER: user
       DB_PASSWORD: password
       DB_NAME: financas_db
       DB_PORT: 5432
     depends_on:
-      - database # Garante que o DB inicie antes do backend
+      - database
 
   frontend:
+    # A construção está OK, já foi verificada.
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -34,11 +34,15 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: financas_db
+    # Removendo o mapeamento de porta externa se não for estritamente necessário para dev local
+    # ports:
+    #   - "5432:5432" 
+    
+    # ATENÇÃO: A sintaxe de volumes estava incompleta ou corrompida. 
+    # Usamos o formato 'VOLUME_EXTERNO:CAMINHO_INTERNO'
     volumes:
-      # Mantém os dados persistidos entre os restarts
-      - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432" # Porta para acesso opcional externo (dev)
-
+      - postgres_data:/var/lib/postgresql/data
+      
+# Volume definition MUST be at the end
 volumes:
   postgres_data:
