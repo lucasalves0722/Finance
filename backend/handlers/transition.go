@@ -25,7 +25,7 @@ func ListarTransacoes(c *gin.Context) {
 	result := database.DB.Order("created_at desc").Find(&transacoes)
 
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar transações"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching transactions"})
 		return
 	}
 
@@ -40,13 +40,13 @@ func CriarTransacao(c *gin.Context) {
 	if err := c.ShouldBindJSON(&input); err != nil {
 		// Se o Bind falhar (ex: por causa de um tipo inesperado), logamos a falha.
 		fmt.Fprintf(os.Stderr, "Erro de Bind no JSON: %v\n", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados de transação inválidos. Verifique se o Valor é um número."})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction data. Please check if the Amount is a number."})
 		return
 	}
 
 	// 2. Validação final dos dados
 	if input.Valor <= 0 || input.Descricao == "" || (input.Tipo != "Receita" && input.Tipo != "Despesa") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Campos obrigatórios faltando ou inválidos (Valor deve ser > 0, Descrição, Tipo)."})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Required fields missing or invalid (Value must be > 0, Description, Type)."})
 		return
 	}
 
@@ -61,7 +61,7 @@ func CriarTransacao(c *gin.Context) {
 	result := database.DB.Create(&novaTransacao)
 
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar transação no banco de dados."})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error saving transaction to the database."})
 		return
 	}
 
