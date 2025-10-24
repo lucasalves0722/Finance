@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+
     # Variáveis de ambiente para conexão com o DB
     environment:
       API_PORT: 8080
@@ -46,3 +47,4 @@ services:
 # Volume definition MUST be at the end
 volumes:
   postgres_data:
+
